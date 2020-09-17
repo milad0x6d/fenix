@@ -5,6 +5,7 @@
 package org.mozilla.fenix.ui
 
 import android.content.Context
+import android.view.View
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.IdlingRegistry
 import kotlinx.coroutines.runBlocking
@@ -20,6 +21,7 @@ import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.RecyclerViewIdlingResource
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestHelper.longTapSelectItem
+import org.mozilla.fenix.helpers.ViewVisibilityIdlingResource
 import org.mozilla.fenix.ui.robots.historyMenu
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.mDevice
@@ -34,6 +36,7 @@ class HistoryTest {
     /* ktlint-disable no-blank-line-before-rbrace */ // This imposes unreadable grouping.
     private lateinit var mockWebServer: MockWebServer
     private var historyListIdlingResource: RecyclerViewIdlingResource? = null
+    private var emptyHistoryVisibilityIdlingResource: ViewVisibilityIdlingResource? = null
 
     @get:Rule
     val activityTestRule = HomeActivityTestRule()
@@ -59,6 +62,10 @@ class HistoryTest {
 
         if (historyListIdlingResource != null) {
             IdlingRegistry.getInstance().unregister(historyListIdlingResource!!)
+        }
+
+        if (emptyHistoryVisibilityIdlingResource != null) {
+            IdlingRegistry.getInstance().unregister(emptyHistoryVisibilityIdlingResource!!)
         }
     }
 
@@ -187,6 +194,11 @@ class HistoryTest {
             IdlingRegistry.getInstance().unregister(historyListIdlingResource!!)
         }.clickDelete {
             verifyDeleteSnackbarText("Deleted")
+            emptyHistoryVisibilityIdlingResource = ViewVisibilityIdlingResource(
+                activityTestRule.activity.findViewById(R.id.history_empty_view),
+                View.VISIBLE
+            )
+            IdlingRegistry.getInstance().register(emptyHistoryVisibilityIdlingResource!!)
             verifyEmptyHistoryView()
         }
     }
@@ -208,6 +220,11 @@ class HistoryTest {
             verifyDeleteConfirmationMessage()
             confirmDeleteAllHistory()
             verifyDeleteSnackbarText("Browsing data deleted")
+            emptyHistoryVisibilityIdlingResource = ViewVisibilityIdlingResource(
+                activityTestRule.activity.findViewById(R.id.history_empty_view),
+                View.VISIBLE
+            )
+            IdlingRegistry.getInstance().register(emptyHistoryVisibilityIdlingResource!!)
             verifyEmptyHistoryView()
         }
     }
